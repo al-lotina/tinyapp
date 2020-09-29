@@ -13,6 +13,11 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+function generateRandomString() {
+  const rand = Math.floor(Math.random() * 9) + 'aBc' + Math.floor(Math.random() * 9) + 'zT';
+  return rand;
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -37,14 +42,15 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   // own code
   const shortURL = generateRandomString();
-  const longURL = req.body.longURL;
+  const longURL = req.body.longURL; // req.body is similar to req.params but is what we get in the form filled by client 
   urlDatabase[shortURL] = longURL;
   res.redirect('/urls/' + shortURL);
 });
 
 app.get("/u/:shortURL", (req, res) => {
   // own code
-  const longURL = req.body.longURL;
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const longURL = templateVars.longURL;
   res.redirect(longURL);
 });
 
@@ -57,9 +63,5 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-function generateRandomString() {
-  const rand = Math.floor(Math.random() * 9) + 'aBc' + Math.floor(Math.random() * 9) + 'zT';
-  return rand;
-}
 // console.log(generateRandomString());
 
