@@ -18,28 +18,36 @@ function generateRandomString() {
   return rand;
 }
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
+// app.get("/", (req, res) => {
+//   res.send("Hello!");
+// });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get("/urls.json", (req, res) => {
+//   res.json(urlDatabase);
+// });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
+// app.get("/hello", (req, res) => {
+//   res.send("<html><body>Hello <b>World</b></body></html>\n");
+// });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase }; // username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
+// // temp
+// const templateVars = {
+//   username: req.cookies["username"],
+//   // ... any other vars
+// };
+// res.render("urls_index", templateVars);
+// //
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+app.get('/urls/new', (req, res) => {
+  // const templateVars = { username: req.cookies["username"] };
+  res.render('urls_new'); //, templateVars);
 });
 
-app.post("/urls", (req, res) => {
+app.post('/urls', (req, res) => {
   // own code
   const shortURL = generateRandomString();
   const longURL = req.body.longURL; // req.body is similar to req.params but is what we get in the form filled by client 
@@ -60,10 +68,19 @@ app.post('/urls/:shortURL/edit', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-app.post('/urls/login', (req, res) => {
+app.post('/login', (req, res) => {
   const username = req.body.username;
   res.cookie('username', username);
   res.redirect('/urls');
+});
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
+
+app.get('/register', (req, res) => {
+  res.render('urls_register');
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -74,7 +91,11 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { 
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL],
+    // username: req.cookies["username"]
+   };
   res.render("urls_show", templateVars);
 });
 
@@ -83,4 +104,18 @@ app.listen(PORT, () => {
 });
 
 // console.log(generateRandomString());
+/* from _header.ejs
+<!-- <div>          
+<% if(username) { %> 
+<span> <%= user %> </span>
+<form class="form-inline" action="/logout" method="POST"> 
+  <div class="form-group mb-2">
+    <input class="form-control" type="text" name="username" placeholder="Logged In As: <%= name %>" style="width: 300px; margin: 1em">
+    <button type="submit" class="btn btn-primary">Logout</button> 
+  </div>  
+</form>
+<% } else { %> 
 
+<% } %> 
+</div>  -->
+*/
