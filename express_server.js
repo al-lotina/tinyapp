@@ -54,6 +54,11 @@ app.get('/register', (req, res) => {
   res.render('urls_register', templateVars);
 });
 
+app.get('/login', (req, res) => {
+  const templateVars = { user: users[req.cookies['user_id']] }
+  res.render('urls_login', templateVars);
+});
+
 app.get("/u/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   const longURL = templateVars.longURL;
@@ -77,10 +82,26 @@ app.post('/urls', (req, res) => {
   // or res.redirect('/urls/'); to go back to index/home page
 });
 
+// const emailLookup = (database, email) => {
+//   for (let user in database) {
+//     if (email === users[user].email) {
+//       return true;
+//     }
+//   }
+// }
+
 app.post('/register', (req, res) => {
   const newUserId = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  if (email === '' || password === '' ) {
+    res.status(400).json({message: 'Please enter email and password'});
+  }
+  for (let user in users) {
+    if (email === users[user].email) {
+      res.status(400).json({message: 'Email already exists'}); 
+    }
+  };  
   users[newUserId] = { id: newUserId, email: email, password: password };
   // console.log(users);
   res.cookie('user_id', newUserId); 
