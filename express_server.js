@@ -39,28 +39,19 @@ function generateRandomString() {
 
 // Routes --------------------------------------
 // Views
-app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase }; //, user: null };
-  //from travis
-  // if (req.cookies.username && urlDatabase[req.cookies.username]) {
-  //   templateVars.user = urlDatabase[req.cookies.username];
-  // }
-  res.render("urls_index", templateVars);
+app.get('/urls', (req, res) => {
+  const templateVars = { urls: urlDatabase, user: users[req.cookies['user_id']] };
+  res.render('urls_index', templateVars);
 });
-// from compass
-// const templateVars = {
-//   username: req.cookies["username"],
-//   // ... any other vars
-// };
-// res.render("urls_index", templateVars);
 
 app.get('/urls/new', (req, res) => {
-  // const templateVars = { username: req.cookies["username"] };
-  res.render('urls_new'); //, templateVars);
+  const templateVars = { user: users[req.cookies['user_id']] };
+  res.render('urls_new', templateVars);
 });
 
 app.get('/register', (req, res) => {
-  res.render('urls_register');
+  const templateVars = { user: users[req.cookies['user_id']] }
+  res.render('urls_register', templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -73,7 +64,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL],
-    // username: req.cookies["username"]
+    user: users[req.cookies['user_id']]
   };
   res.render("urls_show", templateVars);
 });
@@ -116,22 +107,6 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
-
-/* from _header.ejs
-<!-- <div>          
-<% if(username) { %> 
-<span> <%= user %> </span>
-<form class="form-inline" action="/logout" method="POST"> 
-  <div class="form-group mb-2">
-    <input class="form-control" type="text" name="username" placeholder="Logged In As: <%= name %>" style="width: 300px; margin: 1em">
-    <button type="submit" class="btn btn-primary">Logout</button> 
-  </div>  
-</form>
-<% } else { %> 
-
-<% } %> 
-</div>  -->
-*/
