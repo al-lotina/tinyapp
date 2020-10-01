@@ -82,13 +82,15 @@ app.post('/urls', (req, res) => {
   // or res.redirect('/urls/'); to go back to index/home page
 });
 
-// const emailLookup = (database, email) => {
-//   for (let user in database) {
-//     if (email === users[user].email) {
-//       return true;
-//     }
-//   }
-// }
+const getUserByEmail = (database, email) => {
+  for (let user in database) {
+    const userObj = database[user];
+    if (userObj.email === email) {
+      return userObj;
+    }
+  }
+  return false;
+};
 
 app.post('/register', (req, res) => {
   const newUserId = generateRandomString();
@@ -108,6 +110,21 @@ app.post('/register', (req, res) => {
   res.redirect('/urls');
 });
 
+app.post('/login', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const userDetails = getUserByEmail(users, email);
+  if (userDetails === false) {
+    res.status(403).json({message: 'Email not found. Please register'});
+  }
+  if (email === userDetails.email && password === userDetails.password) {
+    res.cookie('user_id', userDetails.id);   
+    res.redirect('/urls');  
+  } else {
+    res.status(403).json({message: 'Incorrect username or password'});
+  }
+});
+
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
@@ -119,12 +136,6 @@ app.post('/urls/:shortURL/edit', (req, res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL] = longURL;
   res.redirect(`/urls/${shortURL}`);
-});
-
-app.post('/login', (req, res) => {
-  const username = req.body.username;
-  res.cookie('username', username);
-  res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {

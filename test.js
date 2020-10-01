@@ -10,13 +10,22 @@ const users = {
     password: "dishwasher-funk"
   }
 };
-const emailLookup = (database, email) => {
+// const emailLookup = (database, email) => {
+//   for (let user in database) {
+//     if (email === database[user]['email']) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   }
+// };
+const getUserByEmail = (database, email) => {
   for (let user in database) {
-    if (email === database[user]['email']) {
-      return true;
-    } else {
-      return false;
+    const userObj = database[user];
+    if (userObj.email === email) {
+      return userObj;
     }
   }
+  return false;
 };
-console.log(emailLookup(users, 'user2@example.com'));
+console.log(getUserByEmail(users, 'user3@example.com'));
