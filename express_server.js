@@ -37,6 +37,16 @@ function generateRandomString() {
   return rand;
 };
 
+const getUserByEmail = (database, email) => {
+  for (let user in database) {
+    const userObj = database[user];
+    if (userObj.email === email) {
+      return userObj;
+    }
+  }
+  return false;
+};
+
 // Routes --------------------------------------
 // Views
 app.get('/urls', (req, res) => {
@@ -82,16 +92,6 @@ app.post('/urls', (req, res) => {
   // or res.redirect('/urls/'); to go back to index/home page
 });
 
-const getUserByEmail = (database, email) => {
-  for (let user in database) {
-    const userObj = database[user];
-    if (userObj.email === email) {
-      return userObj;
-    }
-  }
-  return false;
-};
-
 app.post('/register', (req, res) => {
   const newUserId = generateRandomString();
   const email = req.body.email;
@@ -105,7 +105,6 @@ app.post('/register', (req, res) => {
     }
   };  
   users[newUserId] = { id: newUserId, email: email, password: password };
-  // console.log(users);
   res.cookie('user_id', newUserId); 
   res.redirect('/urls');
 });
