@@ -4,6 +4,7 @@ const app = express();
 const PORT = 8080; 
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -27,19 +28,19 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", 10)
   }
 };
 
 const generateRandomString = function() {
   return Math.random().toString(16).slice(2, 7);
 };
-
+// returns an object with the user's details if email matches
 const getUserByEmail = (database, email) => {
   for (let user in database) {
     const userObj = database[user];
@@ -131,6 +132,7 @@ app.post('/register', (req, res) => {
   const newUserId = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10); // ------ recently added
   if (email === '' || password === '' ) {
     res.status(400).json({message: 'Please enter email and password'});
   }
@@ -139,7 +141,7 @@ app.post('/register', (req, res) => {
       res.status(400).json({message: 'Email already exists'}); 
     }
   };  
-  users[newUserId] = { id: newUserId, email: email, password: password };
+  users[newUserId] = { id: newUserId, email: email, password: hashedPassword };
   res.cookie('user_id', newUserId); 
   res.redirect('/urls');
 });
@@ -151,7 +153,7 @@ app.post('/login', (req, res) => {
   if (userDetails === false) {
     res.status(403).json({message: 'Email not found. Please register'});
   }
-  if (email === userDetails.email && password === userDetails.password) {
+  if (email === userDetails.email && bcrypt.compareSync(password, userDetails.password)) { // ---- rec added
     res.cookie('user_id', userDetails.id);   
     res.redirect('/urls');  
   } else {
