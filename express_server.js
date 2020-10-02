@@ -41,7 +41,7 @@ const generateRandomString = function() {
   return Math.random().toString(16).slice(2, 7);
 };
 
-// returns an object containing user's details (id, email, password) if email matches
+// returns an object containing user's details (id, email, password) if email matches:
 const { getUserByEmail } = require('./helpers');
 
 // returns an object containing all URLs for a given userID:
@@ -56,7 +56,7 @@ const urlsForUser = function(database, id) {
   return filteredUrls;
 };
 
-// returns true or false if user is logged in
+// returns true or false if user is logged in:
 const assertUserId = function(database, id) {
   let assert = false;
   for (let shortURLKey in database) {
@@ -95,7 +95,7 @@ app.get('/login', (req, res) => {
   res.render('urls_login', templateVars);
 });
 
-app.get("/u/:shortURL", (req, res) => {// values entered by the client in the : area of endpoint are stored in the req.params object
+app.get("/u/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
   const longURL = templateVars.longURL;
   res.redirect(longURL);
@@ -115,8 +115,8 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
-  const longURL = req.body.longURL;// req.body is similar to req.params but we get it from the form filled by client
-  urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id };// adds new object to urlDatabase object
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL] = { longURL: longURL, userID: req.session.user_id };
   res.redirect('/urls/' + shortURL);
 });
 
@@ -134,7 +134,7 @@ app.post('/register', (req, res) => {
     }
   }
   users[newUserId] = { id: newUserId, email: email, password: hashedPassword };
-  req.session.user_id = newUserId;//upon registration, cookie is set to user's id (randomly generated) and then encrypted
+  req.session.user_id = newUserId;
   res.redirect('/urls');
 });
 
@@ -146,7 +146,7 @@ app.post('/login', (req, res) => {
     res.status(403).json({message: 'Email not found. Please register'});
   }
   if (email === userDetails.email && bcrypt.compareSync(password, userDetails.password)) {
-    req.session.user_id = userDetails.id;// upon login, cookie is again set to existing user's id and then encrypted
+    req.session.user_id = userDetails.id;
     res.redirect('/urls');
   } else {
     res.status(403).json({message: 'Incorrect username or password'});
