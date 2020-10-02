@@ -14,9 +14,13 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 // Data ---------------------------------------
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID" } // 'aJ48lW'
 };
 
 const users = { 
@@ -32,9 +36,8 @@ const users = {
   }
 };
 
-function generateRandomString() {
-  const rand = Math.floor(Math.random() * 9) + 'aBc' + Math.floor(Math.random() * 9) + 'zT';
-  return rand;
+const generateRandomString = function() {
+  return Math.random().toString(16).slice(2, 7);
 };
 
 const getUserByEmail = (database, email) => {
@@ -46,16 +49,44 @@ const getUserByEmail = (database, email) => {
   }
   return false;
 };
+// returns object with user details:
+const urlsForUser = function (database, id) {
+  const filteredUrls = {};
+  for (let shortURL in database) {
+    const longUrlUserObj = database[shortURL];
+    if (longUrlUserObj.userID === id) {
+      filteredUrls[shortURL] = longUrlUserObj;
+    }
+  }
+  return filteredUrls;
+};
+// returns true or false if user is logged in
+const assertUserId = function (database, id) {
+  let assert = false;
+  for (let shortURLKey in database) {
+    if (database[shortURLKey].userID === id) {
+      assert = true;
+    }
+  }  
+  return assert;
+};
 
 // Routes --------------------------------------
 // Views
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase, user: users[req.cookies['user_id']] };
+  if (!req.cookies['user_id']) {
+    res.redirect('/login');
+  };
+  const userObject = urlsForUser(urlDatabase, req.cookies['user_id']);
+  const templateVars = { urls: userObject, user: users[req.cookies['user_id']] };
   res.render('urls_index', templateVars);
 });
 
 app.get('/urls/new', (req, res) => {
   const templateVars = { user: users[req.cookies['user_id']] };
+  if (!req.cookies['user_id']) {
+    res.redirect('/login');
+  }
   res.render('urls_new', templateVars);
 });
 
@@ -70,15 +101,18 @@ app.get('/login', (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL };
   const longURL = templateVars.longURL;
   res.redirect(longURL);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  if (!req.cookies['user_id']) {
+    res.redirect('/login');
+  } 
   const templateVars = { 
     shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies['user_id']]
   };
   res.render("urls_show", templateVars);
@@ -87,9 +121,10 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   const longURL = req.body.longURL; // req.body is similar to req.params but is what we get in the form filled by client 
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL] = { longURL: longURL, userID: req.cookies['user_id'] }; // adds new key:value pair to database 
+  // console.log(urlDatabase);
   res.redirect('/urls/' + shortURL);
-  // or res.redirect('/urls/'); to go back to index/home page
+  // or res.redirect('/urls/'); //to go back to index/home page
 });
 
 app.post('/register', (req, res) => {
@@ -125,16 +160,24 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
+  if (assertUserId(urlDatabase, req.cookies['user_id'])) {
+    const shortURL = req.params.shortURL;
+    delete urlDatabase[shortURL];
+    res.redirect('/urls'); 
+  } else {
+    res.status(403).json({message: 'You are not authorized to delete this URL'});
+  }
 });
 
 app.post('/urls/:shortURL/edit', (req, res) => {
-  const longURL = req.body.longURL;
-  const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);
+  if (assertUserId(urlDatabase, req.cookies['user_id'])) {
+    const longURL = req.body.longURL;
+    const shortURL = req.params.shortURL;
+    urlDatabase[shortURL].longURL = longURL;
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.status(403).json({message: 'You are not authorized to edit this URL'});
+  }
 });
 
 app.post('/logout', (req, res) => {

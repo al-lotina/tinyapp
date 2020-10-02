@@ -25,7 +25,7 @@
         <% for(let url in urls) { %>
           <tr>
             <td><%= url %></td>
-            <td><%= urls[url] %></td>
+            <td><%= urls[url].longURL %></td>
             <td><form class="form-inline" action="/urls/<%= url %>" method="GET"> 
               <button type="get" class="btn btn-primary">Edit</button> 
           </form></td>

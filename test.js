@@ -10,22 +10,20 @@ const users = {
     password: "dishwasher-funk"
   }
 };
-// const emailLookup = (database, email) => {
-//   for (let user in database) {
-//     if (email === database[user]['email']) {
-//       return true;
-//     } else {
-//       return false;
-//     }
-//   }
-// };
-const getUserByEmail = (database, email) => {
-  for (let user in database) {
-    const userObj = database[user];
-    if (userObj.email === email) {
-      return userObj;
-    }
-  }
-  return false;
+
+const urlDatabase = {
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID" } // 'aJ48lW'
 };
-console.log(getUserByEmail(users, 'user3@example.com'));
+
+const assertUserId = function (database, id) {
+  let assert = false;
+  for (let shortURLKey in database) {
+    if (database[shortURLKey].userID === id) {
+      assert = true;
+    }
+  }  
+  return assert;
+};
+
+console.log(assertUserId(urlDatabase, 'user2RandomID'));
